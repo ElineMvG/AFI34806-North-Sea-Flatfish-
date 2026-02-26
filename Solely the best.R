@@ -1,28 +1,17 @@
 
+
+
+
+
+
 #AFI34806: Modelling Marine Socio-ecological systems
 
 #title: Group work: North Sea Flatfish
 #group 3
 #authors: Eden Baas, Eline van Gelderen & Manu Krishnadath 
 #date: 03/02/2026
-  
+
 ### 1) Load packages
-
-
-### 2) Make a population N of 10 age cohorts for years 2080-2030. 
-ages          <- 1:10     #10 population age classes 
-years         <- 1980:2030
-N             <- matrix(NA,nrow=length(ages), ncol=length(years))
-row.names(N)  <- paste0("age", ages)
-colnames(N)   <- paste0(" ", years)
-R             <- 100
-M             <- 0.15
-F             <- 0.1      #later F=q*effort
-N[,1]         <- 10 * exp(-0.5 * (ages - 1))   # declining age structure
-
-#wts1 <- c(0.1,0.2,0.3,0.4,0.45,0.5,0,5,0.5,0.5)
-
-#biomass1 <- sweep(N,1,wts, FUN= "*")
 
 
 
@@ -41,7 +30,7 @@ b <- 3
 F_vonBertalanffy <-
   function(age, k) {
     Lasym*(1-exp(-k*(age-t0)))
-}
+  }
 
 # Weight-at-age (standard fish allometry: W = a*L^b)
 F_LengthWeight <- 
@@ -75,43 +64,48 @@ F_BiomassGrowth <-
     return(Bnext)
   }
 
+
+
+
+ages          <- 1:8     #10 population age classes 
+years         <- 1980:2100
+N             <- matrix(NA,nrow=length(ages), ncol=length(years))
+row.names(N)  <- paste0("age", ages)
+colnames(N)   <- paste0(" ", years)
+R             <- 10
+M             <- 0.15
+F             <- 0.1      #later F=q*effort
+N[,1]         <- 10 * exp(-(F+M) * (ages - 1))   # declining age structure
+
 # Inital biomass matrix
 biomass <- matrix(NA,nrow=length(ages), ncol=length(years))
 wts <- F_LengthWeight(F_vonBertalanffy(ages, k)) # Initial weights
 biomass[,1] <- N[,1]*wts
 
-#biomass <- sweep(N,1,wts, FUN= "*") ??
+
+
 
 # Yearly biomass loop
 for(ii in 2:length(years)){
+  #calcuate N from previous, takes two steps: add recruitment (age 1), have mortality for other ages
+  N[1,ii] <-  R*  rlnorm(1, meanlog = 0, sdlog = standardDeviation)
+  N[2: length(ages),ii] <- N[1:(length(ages)-1),ii-1] * exp(- (F +  M))
   
-  # Total biomass from previous year
-  S_prev <- sum(biomass[,ii-1], na.rm=TRUE)
   
-  # Density-dependent growth
-  k_year <- k_eff(S_prev)
-  
-  #Update weights at age for this year
-  wts <- F_LengthWeight(F_vonBertalanffy(ages, k_year))
-  
-  # Biomass-at-age last year using current weights
-  biomass_prev <- N[,ii-1] * wts
-  
-  # Biomass growth 
-  B_next <- F_BiomassGrowth(sum(biomass_prev, na.rm = TRUE))
-  
-  # Recruitment from biomass 
-  recruitment_scale <- 0.05
-  N[1,ii] <- max(recruitment_scale * B_next / sum(wts), 0.01)
+  #now calculate biomass
+  biomass[,ii] <- N[,ii] * wts
   
   # Survival of older ages (result of natural mortality and fishing)
   for(aa in 2:length(ages))
     N[aa,ii] <- N[aa-1,ii-1]*exp(-(M + F))
   
-  # Update biomass matrix
-  biomass[,ii] <- N[,ii]*wts
 }
 
+#calculate unstructured biomass per year
+S  <- apply(biomass, 2, "sum")
+plot(S, type="b")
+plot(N[1,], type="b")
+hist(N[1,],50)
 
 
 #Nog niet echt iets mee gedaan:
