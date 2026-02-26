@@ -20,30 +20,9 @@ M             <- 0.15
 F             <- 0.1      #later F=q*effort
 N[,1]         <- 10 * exp(-0.5 * (ages - 1))   # declining age structure
 
-wts1 <- c(0.1,0.2,0.3,0.4,0.45,0.5,0,5,0.5,0.5)
+#wts1 <- c(0.1,0.2,0.3,0.4,0.45,0.5,0,5,0.5,0.5)
 
-biomass1 <- sweep(N,1,wts, FUN= "*")
-
-
-###### -----------
-ages <- 1:10
-years <- 1980:2030
-N <- matrix(NA,nrow=length(ages), ncol=length(years))
-R <- 100
-M <- 0.1
-N[1,] <- R
-F <- 0.1  #later F=q*effort
-for(ii in 2:length(years)){
-  for(aa in 2:length(ages))
-    N[aa,ii] <- N[aa-1,ii-1]*exp(-(M + F))
-}
-wts <- c(0.1,0.2,0.3,0.4,0.45,0.5,0,5,0.5,0.5)
-
-biomass1 <- sweep(N,1,wts, FUN= "*")
-
-########3-----------
-
-
+#biomass1 <- sweep(N,1,wts, FUN= "*")
 
 
 
@@ -135,7 +114,7 @@ for(ii in 2:length(years)){
 
 
 
-
+#Nog niet echt iets mee gedaan:
 # Set the number of licences under TAC
 F_MNG_propRule <-
   function(B){
@@ -169,7 +148,7 @@ entryExitParm       <- 0.5
 
 
 
-
+#### Last cleaned up version of Chatgpt:
 
 # -------------------------------
 # 1) Parameters
